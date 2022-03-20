@@ -1,0 +1,25 @@
+[{
+        "name": "a",
+        "type": "local",
+        "address": "secret1487h689hzdwfwz4ys4nj3gdv6t5up8p543c9c9",
+        "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"ArnvH1b8fZAL6THezBTJQ0Zh3PjaaVnfELNdi1NxfVkd\"}"
+    },
+    {
+        "name": "b",
+        "type": "local",
+        "address": "secret1fr3yhh0xszayuy8p9dlg29hxpkhpj4u0ekv0x2",
+        "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"AzkpbJkbHy+oJX1wGY8cqZhlLn6RWSKbrurNrsUAWJx8\"}"
+    },
+    {
+        "name": "c",
+        "type": "local",
+        "address": "secret1tfyxx5rgs7nyd862stjnfqq27swqr7yggzwrzg",
+        "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"AoXJTVFSf+9Rf2HF+jOQgweNWPziSX4v6nHXNBLUS3eE\"}"
+    },
+    {
+        "name": "d",
+        "type": "local",
+        "address": "secret1kupyll6drq9qqkyte8h45hfn0jp0jpsh6mec5h",
+        "pubkey": "{\"@type\":\"/cosmos.crypto.secp256k1.PubKey\",\"key\":\"Ajv1dfnLUxXZFjYQiB5PFD2wj+LBu78JlhksOp7sJ0hI\"}"
+    }
+]
