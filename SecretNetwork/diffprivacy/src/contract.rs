@@ -2,12 +2,9 @@ use cosmwasm_std::{
     debug_print, to_binary, Api, Binary, Env, Extern, HandleResponse, InitResponse, Querier,
     StdError, StdResult, Storage,
 };
-use crate::msg::{CountResponse, HandleMsg, InitMsg, QueryMsg};
-use crate::state::{State, set_config, get_config, convert_state_from_stored, convert_state_to_stored};
-use substrate_fixed::types::I20F12;
-use std::str::FromStr;
-// use opendp::core::*;
 
+use crate::msg::{CountResponse, HandleMsg, InitMsg, QueryMsg};
+use crate::state::{config, config_read, State};
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -15,10 +12,13 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     msg: InitMsg,
 ) -> StdResult<InitResponse> {
     let state = State {
-        count: I20F12::from_str(&msg.count).ok().unwrap(),
-        owner: env.message.sender,
+        count: msg.count,
+        owner: deps.api.canonical_address(&env.message.sender)?,
     };
-    set_config(&mut deps.storage, convert_state_to_stored(&deps.api, state)?)?;
+
+    config(&mut deps.storage).save(&state)?;
+
+    debug_print!("Contract was initialized by {}", env.message.sender);
 
     Ok(InitResponse::default())
 }
@@ -38,10 +38,11 @@ pub fn try_increment<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     _env: Env,
 ) -> StdResult<HandleResponse> {
-    let stored_state = get_config(&deps.storage)?;
-    let mut state = convert_state_from_stored(&deps.api, stored_state)?;
-    state.count = state.count + I20F12::from_num(1_u32);
-    set_config(&mut deps.storage, convert_state_to_stored(&deps.api, state)?)?;
+    config(&mut deps.storage).update(|mut state| {
+        state.count += 1;
+        debug_print!("count = {}", state.count);
+        Ok(state)
+    })?;
 
     debug_print("count incremented successfully");
     Ok(HandleResponse::default())
@@ -50,22 +51,16 @@ pub fn try_increment<S: Storage, A: Api, Q: Querier>(
 pub fn try_reset<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     env: Env,
-    count: String,
+    count: i32,
 ) -> StdResult<HandleResponse> {
     let sender_address_raw = deps.api.canonical_address(&env.message.sender)?;
-    let stored_state = get_config(&deps.storage)?;
-    if sender_address_raw != stored_state.owner {
-        return Err(StdError::Unauthorized { backtrace: None });
-    }
-    set_config(&mut deps.storage, convert_state_to_stored(
-        &deps.api, 
-        State {
-            // count: I20F12::from_num(0_u32),
-            count: I20F12::from_str(&count).ok().unwrap(),
-            owner: env.message.sender,
+    config(&mut deps.storage).update(|mut state| {
+        if sender_address_raw != state.owner {
+            return Err(StdError::Unauthorized { backtrace: None });
         }
-    )?)?;
-
+        state.count = count;
+        Ok(state)
+    })?;
     debug_print("count reset successfully");
     Ok(HandleResponse::default())
 }
@@ -80,9 +75,8 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
 }
 
 fn query_count<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> StdResult<CountResponse> {
-    let stored_state = get_config(&deps.storage)?;
-    let state = convert_state_from_stored(&deps.api, stored_state)?;
-    Ok(CountResponse { count: state.count.to_string()})
+    let state = config_read(&deps.storage).load()?;
+    Ok(CountResponse { count: state.count })
 }
 
 #[cfg(test)]
@@ -90,7 +84,6 @@ mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env};
     use cosmwasm_std::{coins, from_binary, StdError};
-/*
 
     #[test]
     fn proper_initialization() {
@@ -155,5 +148,4 @@ mod tests {
         let value: CountResponse = from_binary(&res).unwrap();
         assert_eq!(5, value.count);
     }
-*/
 }
