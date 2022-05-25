@@ -6,6 +6,8 @@ use crate::msg::{CountResponse, HandleMsg, InitMsg, QueryMsg};
 use crate::state::{State, set_config, get_config, convert_state_from_stored, convert_state_to_stored};
 use substrate_fixed::types::I20F12;
 use std::str::FromStr;
+use crate::random::{get_random_number_generator, supply_more_entropy, sha_256};
+use rand_chacha::ChaChaRng;
 // use opendp::core::*;
 
 
@@ -28,6 +30,12 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     env: Env,
     msg: HandleMsg,
 ) -> StdResult<HandleResponse> {
+    let mut fresh_entropy = to_binary(&msg)?.0;
+    fresh_entropy.extend(to_binary(&env)?.0);
+    supply_more_entropy(&mut deps.storage, fresh_entropy.as_slice())?;
+    let mut rng = get_random_number_generator(&deps.storage);
+    let a_random_u64_number = rng.next_u64();
+
     match msg {
         HandleMsg::Increment {} => try_increment(deps, env),
         HandleMsg::Reset { count } => try_reset(deps, env, count),
