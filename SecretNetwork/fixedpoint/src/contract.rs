@@ -41,9 +41,10 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     let mut rng = get_random_number_generator(&deps.storage);
     //let a_random_u64_number = rng.get_random_number(); 
     let a_random_u64_number = rng.next_u64();
+    let b_random_u64_number = rng.next_u64();
 
     match msg {
-        HandleMsg::Increment {} => try_increment(deps, env, a_random_u64_number),
+        HandleMsg::Increment {} => try_increment(deps, env, a_random_u64_number, b_random_u64_number),
         HandleMsg::Reset { count } => try_reset(deps, env, count),
     }
 }
@@ -52,21 +53,28 @@ pub fn try_increment<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     _env: Env,
     rand_num: u64,
+    rand_num2: u64,
 ) -> StdResult<HandleResponse> {
     let stored_state = get_config(&deps.storage)?;
     let mut state = convert_state_from_stored(&deps.api, stored_state)?;
-    // let max_num = I64F64::from_num(u64::MAX);
+
+    let max_num = I64F64::from_num(u64::MAX);
+
     let rand_i64 = I64F64::from_num(rand_num);
-    // let random_zero_one =  rand_i64 / max_num;
-    let sensitivity = 1;
-    let epsilon = 0.1; 
+    let rand_i64_2 = I64F64::from_num(rand_num2);
 
-    let scale = sensitivity as f64 / epsilon;
+    let random_zero_one  =  rand_i64.checked_div(max_num).unwrap();
+    let random_zero_one_2 = rand_i64_2.checked_div(max_num).unwrap();
 
-    let laplace_num = laplace(I64F64::from_num(scale), rand_i64);
+    let sensitivity = I64F64::from_num(1);
+    let epsilon = I64F64::from_str("0.1").ok().unwrap(); 
+
+    let scale: I64F64 = sensitivity.checked_div(epsilon).unwrap();
+
+    let laplace_num = laplace(scale, random_zero_one, random_zero_one_2);
     //Add random 64bit number to count
     // state.count = state.count + I64F64::from_num(a_random_u64_number);
-    state.count = state.count + I64F64::from_num(rand_num);
+    state.count = state.count + laplace_num;
     // state.count = rand_i64;
     set_config(&mut deps.storage, convert_state_to_stored(&deps.api, state)?)?;
 
@@ -92,9 +100,10 @@ pub fn exp_sample(
 pub fn laplace(
   scale: I64F64,
   rand_num: I64F64,
+  rand_num_2: I64F64,
 ) -> I64F64 {
   let e1 = exp_sample(scale, rand_num);
-  let e2 = exp_sample(scale, rand_num);
+  let e2 = exp_sample(scale, rand_num_2);
   e1 - e2
 }
 
