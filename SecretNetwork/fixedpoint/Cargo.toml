@@ -50,7 +50,7 @@ primitive-types = { version = "0.9.0", default-features = false }
 rand_chacha = { version = "0.2.2", default-features = false }
 rand_core = { version =  "0.5.1", default-features = false }
 sha2 = { version = "0.9.1", default-features = false }
-secp256k1 = "0.20.3"
+# secp256k1 = "0.24.0"
 rand = "0.7.3"
 
 [dev-dependencies]

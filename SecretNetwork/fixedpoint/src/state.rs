@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
-use substrate_fixed::types::I20F12;
+use substrate_fixed::types::I64F64;
 use cosmwasm_std::{Api, HumanAddr, CanonicalAddr, Storage, StdResult, StdError, ReadonlyStorage, };
 use std::any::type_name;
 use std::convert::TryInto;
@@ -16,7 +16,7 @@ pub struct StoredState {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct State {
-    pub count: I20F12,
+    pub count: I64F64,
     pub owner: HumanAddr,
 }
 
@@ -24,11 +24,11 @@ pub fn convert_state_from_stored<A: Api>(
     api: &A,
     stored_state: StoredState,
 ) -> StdResult<State> {
-    let count_bytes: [u8; 4] = match stored_state.count.as_slice().try_into() {
+    let count_bytes: [u8; 16] = match stored_state.count.as_slice().try_into() {
         Ok(count) => count,
         Err(err) => { return Err(StdError::generic_err(format!("{:?}", err))) },
     };
-    let count = I20F12::from_be_bytes(count_bytes);
+    let count = I64F64::from_be_bytes(count_bytes);
     let state = State {
         count,
         owner: api.human_address(&stored_state.owner)?,

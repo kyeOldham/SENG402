@@ -4,12 +4,17 @@ use cosmwasm_std::{
 };
 use crate::msg::{CountResponse, HandleMsg, InitMsg, QueryMsg};
 use crate::state::{State, set_config, get_config, convert_state_from_stored, convert_state_to_stored};
-use substrate_fixed::types::I20F12;
+use substrate_fixed::types::{I20F12,I64F64, I9F23};
+use substrate_fixed::transcendental::{log2};
 use std::str::FromStr;
+use std::u64::MAX;
+use rand::{RngCore, SeedableRng};
 use crate::random::{get_random_number_generator, supply_more_entropy, sha_256};
 use rand_chacha::ChaChaRng;
+use core::ops::{AddAssign, BitOrAssign, ShlAssign};
 // use opendp::core::*;
 
+// pub const LOG2_E: I9F23 = I9F23::from_bits((consts::LOG2_E.to_bits() >> 104) as i32);
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -17,7 +22,7 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
     msg: InitMsg,
 ) -> StdResult<InitResponse> {
     let state = State {
-        count: I20F12::from_str(&msg.count).ok().unwrap(),
+        count: I64F64::from_str(&msg.count).ok().unwrap(),
         owner: env.message.sender,
     };
     set_config(&mut deps.storage, convert_state_to_stored(&deps.api, state)?)?;
@@ -34,10 +39,11 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
     fresh_entropy.extend(to_binary(&env)?.0);
     supply_more_entropy(&mut deps.storage, fresh_entropy.as_slice())?;
     let mut rng = get_random_number_generator(&deps.storage);
+    //let a_random_u64_number = rng.get_random_number(); 
     let a_random_u64_number = rng.next_u64();
 
     match msg {
-        HandleMsg::Increment {} => try_increment(deps, env),
+        HandleMsg::Increment {} => try_increment(deps, env, a_random_u64_number),
         HandleMsg::Reset { count } => try_reset(deps, env, count),
     }
 }
@@ -45,14 +51,51 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
 pub fn try_increment<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
     _env: Env,
+    rand_num: u64,
 ) -> StdResult<HandleResponse> {
     let stored_state = get_config(&deps.storage)?;
     let mut state = convert_state_from_stored(&deps.api, stored_state)?;
-    state.count = state.count + I20F12::from_num(1_u32);
+    // let max_num = I64F64::from_num(u64::MAX);
+    let rand_i64 = I64F64::from_num(rand_num);
+    // let random_zero_one =  rand_i64 / max_num;
+    let sensitivity = 1;
+    let epsilon = 0.1; 
+
+    let scale = sensitivity as f64 / epsilon;
+
+    let laplace_num = laplace(I64F64::from_num(scale), rand_i64);
+    //Add random 64bit number to count
+    // state.count = state.count + I64F64::from_num(a_random_u64_number);
+    state.count = state.count + I64F64::from_num(rand_num);
+    // state.count = rand_i64;
     set_config(&mut deps.storage, convert_state_to_stored(&deps.api, state)?)?;
+
+    // Divide random number in 64bit form by the max 64 bit number
+    
 
     debug_print("count incremented successfully");
     Ok(HandleResponse::default())
+}
+
+pub fn exp_sample(
+  mean: I64F64,
+  rand_num: I64F64,
+) -> I64F64 {
+  type S = I64F64;
+  type D = I64F64;
+
+  let result: D = log2::<S, D>(S::from_num(rand_num)).unwrap();
+
+  -mean * result
+}
+
+pub fn laplace(
+  scale: I64F64,
+  rand_num: I64F64,
+) -> I64F64 {
+  let e1 = exp_sample(scale, rand_num);
+  let e2 = exp_sample(scale, rand_num);
+  e1 - e2
 }
 
 pub fn try_reset<S: Storage, A: Api, Q: Querier>(
@@ -69,7 +112,8 @@ pub fn try_reset<S: Storage, A: Api, Q: Querier>(
         &deps.api, 
         State {
             // count: I20F12::from_num(0_u32),
-            count: I20F12::from_str(&count).ok().unwrap(),
+            count: I64F64::from_str(&count).ok().unwrap(),
+            // count: I20F12::from_str(&count).ok().unwrap(),
             owner: env.message.sender,
         }
     )?)?;
