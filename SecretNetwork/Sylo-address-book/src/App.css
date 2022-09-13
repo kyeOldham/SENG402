@@ -1,0 +1,199 @@
+.App {
+  text-align: center;
+  height: 812px;
+  width: 375px;
+  margin: 0px auto;
+  background-color: #FFFFFF;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+#start-page {
+  margin-top: 194px;
+}
+
+h1.home-title {
+  font-size: 25px;
+  color: #646464;
+  font-family: Rawline;
+}
+
+p.text, span, h2, h3, li, input, ::placeholder, .edit-btn a {
+  font-family: Rawline;
+}
+
+.txn-fee {
+  margin-bottom: 5px;;
+}
+.alert {
+  margin-bottom: 10px;
+}
+
+.edit-btn a {
+  text-decoration: none;
+}
+
+h3 {
+  font-family: Rawline;
+  font-style: normal;
+  color: #495162;
+  font-weight: normal;
+  font-size: 18px;
+}
+
+ul li {
+  text-decoration: none;
+  width: 100%;
+  margin-left: 15px;
+  display: block;
+}
+
+li.contact a {
+  display: flex;
+  text-decoration: none;
+}
+
+h3.contact-name {
+  order: 3;
+  margin-left: 15px;
+}
+img.contact-img {
+  order: 2;
+}
+
+ul {
+  display: block;
+  width: 100%;
+  padding: 0px;
+}
+
+button.main-btn {
+  background: #F15A29;
+  border-radius: 21.5px;
+
+  height: 44px;
+  border: none;
+  width: 343px;
+}
+
+button.main-btn.delete {
+  background: #FFFFFF;
+  border: 1px solid #EE3D52;
+  margin-bottom: 10px;
+}
+
+button.main-btn.delete span.label {
+  color: #EE3D52;
+}
+
+span.label {
+  color: #FFFFFF;
+  font-family: Rawline;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 15px;
+  text-align: center;
+}
+
+input {
+  background: #F6F6F6;
+  border-radius: 40px;
+  height: 44px;
+  width: 100%;
+  margin-bottom: 15px;
+  border: none;
+}
+
+::placeholder {
+  padding: 15px;
+  color: #495162;
+  font-size: 15px;
+}
+
+.title-arrow {
+  display: flex;
+  width: 100%;
+  margin: 20px 0px 20px 0px;
+}
+
+.error {
+  color: #9D0000;
+}
+
+.title-arrow h3 {
+  order: 2;
+  margin: 0px auto;
+}
+
+.back-arrow {
+  order: 1;
+  margin-left: 15px;
+  float: left;
+}
+
+.edit-btn {
+  order: 3;
+  float: right;
+  margin-right: 15px;
+}
+
+.big-icon {
+  width: 50px;
+  margin: 0px auto;
+}
+
+.react-icon {
+  color: #495162;
+  width: 22px;
+  margin-top: 5px;
+  height: 22px;
+}
+
+input:focus-visible {
+  outline: none;
+}
+
+.react-plus {
+  color: #495162;
+  width: 35px;
+  height: 35px;
+  margin-top: 15px;
+}
+
+.contact-img {
+  width: 15%;
+}
