@@ -20,16 +20,11 @@ import {
 
 const el = document.getElementById("root");
 
-const restUrl = 'https://api.stakeordie.com';
-const provider = getKeplrAccountProvider();
 
-function runApp() {
+// function runApp() {
   ReactDOM.render(
     <React.StrictMode>
       <App />
     </React.StrictMode>,
     el
   );
-}
-
-gripApp(restUrl, provider, runApp);

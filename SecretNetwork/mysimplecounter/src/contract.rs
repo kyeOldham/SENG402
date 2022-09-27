@@ -4,7 +4,8 @@ use cosmwasm_std::{
 };
 
 use crate::msg::{CountResponse, HandleMsg, InitMsg, QueryMsg};
-use crate::state::{config, config_read, State};
+use crate::state::{config, config_read, State, add_value, get_values};
+use std::str::FromStr;
 
 pub fn init<S: Storage, A: Api, Q: Querier>(
     deps: &mut Extern<S, A, Q>,
@@ -16,7 +17,15 @@ pub fn init<S: Storage, A: Api, Q: Querier>(
         owner: deps.api.canonical_address(&env.message.sender)?,
     };
 
+
     config(&mut deps.storage).save(&state)?;
+
+    // let value = I32F32::from_str(&msg.count).ok().unwrap();
+
+    // let value = i32::from_str(&msg.count).unwrap();
+
+    add_value(&mut deps.storage, msg.count)?;
+    
 
     debug_print!("Contract was initialized by {}", env.message.sender);
 
@@ -30,7 +39,7 @@ pub fn handle<S: Storage, A: Api, Q: Querier>(
 ) -> StdResult<HandleResponse> {
     match msg {
         HandleMsg::Increment {} => try_increment(deps, env),
-        HandleMsg::Reset { count } => try_reset(deps, env, count),
+        HandleMsg::AddValue { value } => try_add_value(deps, env, value),
     }
 }
 
@@ -48,21 +57,23 @@ pub fn try_increment<S: Storage, A: Api, Q: Querier>(
     Ok(HandleResponse::default())
 }
 
-pub fn try_reset<S: Storage, A: Api, Q: Querier>(
-    deps: &mut Extern<S, A, Q>,
-    env: Env,
-    count: i32,
+
+pub fn try_add_value<S: Storage, A: Api, Q: Querier>(
+  deps: &mut Extern<S, A, Q>,
+  env: Env,
+  count: i32,
 ) -> StdResult<HandleResponse> {
-    let sender_address_raw = deps.api.canonical_address(&env.message.sender)?;
-    config(&mut deps.storage).update(|mut state| {
-        if sender_address_raw != state.owner {
-            return Err(StdError::Unauthorized { backtrace: None });
-        }
-        state.count = count;
-        Ok(state)
-    })?;
-    debug_print("count reset successfully");
-    Ok(HandleResponse::default())
+  // let sender_address_raw = deps.api.canonical_address(&env.message.sender)?;
+  // config(&mut deps.storage).update(|mut state| {
+  //     if sender_address_raw != state.owner {
+  //         return Err(StdError::Unauthorized { backtrace: None });
+  //     }
+  //     state.count = count;
+  //     Ok(state)
+  // })?;
+  add_value(&mut deps.storage, count)?;
+  debug_print("value added successfully");
+  Ok(HandleResponse::default())
 }
 
 pub fn query<S: Storage, A: Api, Q: Querier>(
@@ -70,13 +81,15 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
     msg: QueryMsg,
 ) -> StdResult<Binary> {
     match msg {
-        QueryMsg::GetCount {} => to_binary(&query_count(deps)?),
+        QueryMsg::GetSize {} => to_binary(&query_size(deps)?),
     }
 }
 
-fn query_count<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> StdResult<CountResponse> {
-    let state = config_read(&deps.storage).load()?;
-    Ok(CountResponse { count: state.count })
+fn query_size<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> StdResult<CountResponse> {
+    let (values, size) = get_values(&deps.storage)?;
+    // debug_print(values);
+
+    Ok(CountResponse { count: size as i32 })
 }
 
 #[cfg(test)]

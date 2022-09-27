@@ -1,6 +1,7 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 import Start from './Start';
+import StartCopy from './StartCopy'
 import Contacts from './Contacts';
 import NewContact from './NewContact';
 import EditContact from './EditContact';

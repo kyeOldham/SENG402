@@ -2,9 +2,9 @@ import React from "react";
 
 // import getCount from "./helpers.js"
 
-import { bootstrap } from '@stakeordie/griptape.js';
+// import { bootstrap } from '@stakeordie/griptape.js';
 
-bootstrap();
+// bootstrap();
 
 const App = () => {
   

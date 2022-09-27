@@ -2,14 +2,14 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use substrate_fixed::types::I64F64;
-use cosmwasm_std::{Api, HumanAddr, CanonicalAddr, Storage, StdResult, StdError, ReadonlyStorage, };
+// use substrate_fixed::types::{I20F12,I64F64, I9F23};
+use cosmwasm_std::{Api, HumanAddr, CanonicalAddr, Storage, StdResult, StdError, ReadonlyStorage};
+use secret_toolkit::storage::{AppendStore, AppendStoreMut};
 use std::any::type_name;
-use secret_toolkit::storage::{AppendStore};
+use std::str::FromStr;
 use std::convert::TryInto;
 
 pub static CONFIG_KEY: &[u8] = b"config";
-
-pub static COUNT_STORE: AppendStore<i32> = AppendStore::new(b"count");
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -57,6 +57,7 @@ pub fn set_config<S: Storage>(
     state: StoredState,
 ) -> StdResult<()> {
     set_bin_data(storage, CONFIG_KEY, &state)
+    
 }
 
 pub fn get_config<S: ReadonlyStorage>(
@@ -64,6 +65,73 @@ pub fn get_config<S: ReadonlyStorage>(
 ) -> StdResult<StoredState> {
     get_bin_data(storage, CONFIG_KEY)
 }
+
+// Append store storage
+
+pub fn add_value<S: Storage>(
+  storage: &mut S,
+  value: I64F64,
+) -> StdResult<u32> {
+
+  //let vec_val = value.to_be_bytes().to_vec();
+  let mut storage = AppendStoreMut::<String, _>::attach_or_create(storage)?;
+
+  //storage.push(&vec_val)?;
+  storage.push(&value.to_string())?;
+  Ok(storage.len()-1)
+}
+
+pub fn get_values<S: ReadonlyStorage>(
+  storage: &S,
+) -> StdResult<(Vec<I64F64>, u32)> {
+  // Try to access the storage of values (of type I32F32).
+  // If it doesn't exist yet, return an empty list.
+  let append_store = if let Some(result) = AppendStore::<String, _>::attach(storage) {
+      result?
+  } else {
+      return Ok((vec![], 0));
+  };
+
+  let temp_values : Vec<I64F64> = append_store.iter().map(|v| I64F64::from_str(&v.ok().unwrap()).ok().unwrap()).collect();
+  // let mut values: Vec<I64F64> = Vec::new();
+  // values.push(I64F64::from_str("0.5").ok().unwrap());
+  // values.push(I64F64::from_str("1.5").ok().unwrap());
+  // values.push(I64F64::from_str("2.2").ok().unwrap());
+  // values.push(I64F64::from_str("0.15").ok().unwrap());
+  // values.push(I64F64::from_str("3.2").ok().unwrap());
+
+  // let mut values: Vec<String> = Vec::new();
+  // values.push(String::from("0.5"));
+  // values.push(String::from("1.5"));
+  // values.push(String::from("2.2"));
+  // values.push(String::from("0.1"));
+  // values.push(String::from("3.2"));
+
+  // for i in 0..temp_values.len() {
+  //   let value_bytes: [u8; 16] = match temp_values[i].as_slice().try_into() {
+  //     Ok(value) => value,
+  //     Err(err) => { return Err(StdError::generic_err(format!("{:?}", err))) }
+  //   };
+  //   values.push(I64F64::from_be_bytes(value_bytes));
+  // }
+
+  // let final_values: StdResult<Vec<I64F64>> = (values, append_store.len())
+  //   .collect()  
+  //   .iter();
+
+    // let final_values: StdResult<Vec<I64F64>> = values
+    // .iter();
+    // .collect()  
+    
+
+    // .collect()
+
+      // values.map(v| (v, append_store.len()))
+      // Ok((values, append_store.len()))
+      Ok((temp_values, append_store.len()))
+  // Ok(values)
+}
+
 
 //
 // Bin data storage setters and getters
