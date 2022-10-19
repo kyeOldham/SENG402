@@ -1,4 +1,3 @@
-import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 import Start from './Start';
 
@@ -11,7 +10,7 @@ import Start from './Start';
 const Main = () => (
   <main>
     <Switch>
-        <Route exact path="/" component={Start}/>
+      <Route exact path="/" component={Start} />
     </Switch>
   </main>
 )

@@ -5,7 +5,7 @@ The backend directory has the contracts written in rust for the Secret Network
 
 The deployer directory is where the contracts are deployed to the Secret Network local testnet
 
-The diffprivacy-app directory has the frontend application that
+The diffprivacy-app directory has the frontend application that interacts with the Smart Contracts via Keplr wallet
 - The contract address and codehash for the deployed contract must be used here
 
 # Steps to run full solution
