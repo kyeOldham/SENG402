@@ -230,7 +230,7 @@ pub fn query<S: Storage, A: Api, Q: Querier>(
 fn query_count<S: Storage, A: Api, Q: Querier>(deps: &Extern<S, A, Q>) -> StdResult<CountResponse> {
     // let (values, size) = get_values(&deps.storage)?;
     Ok(CountResponse {
-        count: String::from("0"),
+        count: String::from("2"),
     })
 }
 
@@ -256,15 +256,10 @@ mod tests {
         // we can just call .unwrap() to assert this was a success
         let res = init(&mut deps, env, msg).unwrap();
         assert_eq!(0, res.messages.len());
-
-        // it worked, let's query the state
-        let res = query(&deps, QueryMsg::GetCount {}).unwrap();
-        let value: CountResponse = from_binary(&res).unwrap();
-        assert_eq!(String::from("1"), value.count);
     }
 
     // Test add value
-    // This test should fail
+    // This test should pass
     #[test]
     fn add_value() {
         let mut deps = mock_dependencies(20, &coins(2, "token"));
@@ -287,7 +282,7 @@ mod tests {
         assert_eq!(String::from("2"), value.count);
     }
 
-    // Test diff mean
+    // Test diff count
     // This test should fail
     // because the contract should
     #[test]
@@ -315,7 +310,14 @@ mod tests {
         };
         let _res = handle(&mut deps, env, msg).unwrap();
 
-        // Get diff mean
+        // Add 4.6
+        let env = mock_env("anyone", &coins(2, "token"));
+        let msg = HandleMsg::AddValue {
+            value: String::from("4.6"),
+        };
+        let _res = handle(&mut deps, env, msg).unwrap();
+
+        // Get diff count
         let env = mock_env("anyone", &coins(2, "token"));
         let msg = HandleMsg::DiffCount {};
         let value: HandleResponse = handle(&mut deps, env, msg).ok().unwrap();
@@ -329,6 +331,10 @@ mod tests {
         }
     }
 
+
+    // Test diff mean
+    // This test should fail
+    // because the contract should
     #[test]
     fn diff_mean() {
         let mut deps = mock_dependencies(20, &coins(2, "token"));

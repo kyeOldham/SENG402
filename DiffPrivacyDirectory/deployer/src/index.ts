@@ -1,6 +1,6 @@
 import { Wallet, SecretNetworkClient, newPermit, Permit, fromUtf8, toBase64, Coin, Tx} from "secretjs";
 import { readFileSync } from "fs";
-import { a } from "./accounts";
+import { a, b } from "./accounts";
 
 const CHAIN_ID = "secretdev-1";
 
@@ -68,17 +68,17 @@ const instantiate = async(
 const main = async () => {
     console.log("Creating signers for a, b, c, d");
     // Create signer for wallet account a
-    a.signer = await SecretNetworkClient.create({
+    b.signer = await SecretNetworkClient.create({
         grpcWebUrl: "http://localhost:9091",
         chainId: CHAIN_ID,
-        wallet: a.wallet,
-        walletAddress: a.wallet.address,
+        wallet: b.wallet,
+        walletAddress: b.wallet.address,
     });
 
     // add contract to chain with "a" as admin
     console.log("Uploading contract code");
     const contract: ContractInfo = await uploadContract(
-        a.signer, 
+        b.signer, 
         readFileSync(`${__dirname}/../../backend/contract.wasm.gz`) as Uint8Array,
         "",
         "", 
@@ -89,9 +89,9 @@ const main = async () => {
     // Instantiate contract with value 5
     // Change this to whatever you would like the first value to be
     const instantiateMsg = {
-      value: "5"
+      value: "-6"
     }
-    const address = await instantiate(a.signer, contract.codeId, contract.codeHash, instantiateMsg, `diff-privacy-example-${contract.codeId}`, 40_000);
+    const address = await instantiate(b.signer, contract.codeId, contract.codeHash, instantiateMsg, `diff-privacy-example-${contract.codeId}`, 40_000);
     console.log(address);
 }
 

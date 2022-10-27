@@ -162,7 +162,7 @@ function Start() {
   // Handle submit button
   function handleFormSubmit(e: any) {
     e.preventDefault();
-    addValue(inputVal);
+    addValue(inputVal.toString());
     console.log("added " + inputVal)
   };
 
@@ -279,7 +279,7 @@ function Start() {
       });
 
       setSecretjs(a.signer);
-
+      setKeplrReady(true);
       setMyAddress(a.wallet.address);
     }
 
@@ -317,7 +317,7 @@ function Start() {
               <form onSubmit={handleFormSubmit}>
                 <label>
                   Enter value to add to dataset:
-                  <input type="text" name="name" defaultValue="0" onChange={(e) => setInputVal(e.target.value)} />
+                  <input type="number" step="0.001" name="name" defaultValue="0" onChange={(e) => setInputVal(e.target.value)} />
                 </label>
                 <input type="submit" value="Submit" />
               </form>
